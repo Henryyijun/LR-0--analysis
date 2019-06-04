@@ -57,7 +57,7 @@ class Tree:
     def print_tree(self, root):
         if root is not None and root.node_kind == 'Vn' and root != '`':
             if len(root.children) > 0:
-                print(root.value,'(', end='')
+                print(root.value, '(', end='')
                 for n in root.children:
                     self.print_tree(n)
                 print(')', end='')

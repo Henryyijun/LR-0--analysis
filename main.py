@@ -8,8 +8,4 @@ if __name__ == '__main__':
         print(i)
     print()
     d.dfa()
-    s = set()
-    s.add(Product('S', 'A'))
-    s.add(Product('S', 'A'))
-    for i in s:
-        print(i)
+

@@ -4,7 +4,8 @@ if __name__ == '__main__':
     g = Grammar()
     g.create('product.txt')
     d = DFA(g)
-    for i in d.grammar.P:
+    close = d.closure(Product("S'", '.S'))
+    for i in close:
         print(i)
     print()
     d.dfa()

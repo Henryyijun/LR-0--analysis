@@ -50,9 +50,40 @@ class DFA:
                 if i.right[position + 1] in self.grammar.Vn:
                     c = i.right[position + 1]
                     for item in self.grammar.P:
-                        if c == item.left:
+                        if c == item.left and item not in close:
                             close.append(item)
         return close
+
+    def goto(self, i, x):
+        '''
+        :param i: is a set of items
+        :param x: is a grammar symbol
+        :return:a new set of items, 在状态i下输入符号x转变成新的状态集合
+        '''
+        new_i = set()
+        for item in i:
+            position = item.right.find('.')
+            if position == len(item.right) - 1:
+                continue
+            elif 0 <= position < len(item.right) - 1 and item.right[position + 1] == x:
+                temp = item.right[:position] + item.right[position + 1] + '.' + item.right[position + 2:]
+                p = Product(item.left, temp)
+                new_i.add(p)
+                close = self.closure(p)
+                close = set(close)
+                new_i = new_i | close
+        return new_i
+
+    def is_in_i(self, items):
+        '''
+        检查当前状态集合是否已经存在
+        :param items: 项目集合，
+        :return: 存在返回true，否则返回 false
+        '''
+        for item in self.i:
+            if len(item) == len(items) and len(items - item) == 0:
+                return True
+        return False
 
     def dfa(self):
         '''
@@ -60,10 +91,35 @@ class DFA:
         :return:  活前缀DFA
         '''
         close = self.closure(Product("S'", '.S'))
+        symbols = self.grammar.Vn | self.grammar.Vt
+        symbols.remove("S'")
+        print(symbols)
         self.i.append(set(close))
-        for item in self.i:
-            pass
+        for items in self.i:
+            for x in symbols:
+                temp = self.goto(items, x)
+                for a in temp:
+                    print(a)
+                print()
+                if len(temp) > 0:
+                    if not self.is_in_i(temp):
+                        self.i.append(temp)
+                        key = tuple([tuple(items), x])
+                        d = {key: temp}
+                        self.status.append(d)
+                    else:
+                        key = tuple([tuple(items), x])
+                        d = {key: temp}
+                        self.status.append(d)
 
+    def show_i(self):
+        for items in self.i:
+            for item in items:
+                print(item, end=' ')
+            print()
+
+    def show_status(self):
+        pass
 
 
 

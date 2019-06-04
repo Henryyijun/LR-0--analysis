@@ -14,7 +14,7 @@ class Product:
         return hash(id(self.left) + id(self.right))
 
     def __eq__(self, other):
-        return self.left is other.left and self.right is other.right
+        return self.left == other.left and self.right == other.right
 
 
 class Grammar:

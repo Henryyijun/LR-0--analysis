@@ -1,5 +1,3 @@
-from syntax_tree import *
-from grammar import *
 from dfa import *
 
 if __name__ == '__main__':
@@ -9,6 +7,9 @@ if __name__ == '__main__':
     for i in d.grammar.P:
         print(i)
     print()
-    close = d.closure(Product("S'", '.B'))
-    for i in close:
+    d.dfa()
+    s = set()
+    s.add(Product('S', 'A'))
+    s.add(Product('S', 'A'))
+    for i in s:
         print(i)

@@ -7,6 +7,15 @@ class Product:
     def __str__(self):
         return self.left + '->' + self.right
 
+    def __cmp__(self, other):
+        return self.left == other.left and self.right == other.right
+
+    def __hash__(self):
+        return hash(id(self.left) + id(self.right))
+
+    def __eq__(self, other):
+        return self.left is other.left and self.right is other.right
+
 
 class Grammar:
     def __init__(self):

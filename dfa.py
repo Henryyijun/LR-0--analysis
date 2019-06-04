@@ -7,6 +7,7 @@ class DFA:
         引入新的开始符号S'
         :param g: Grammar
         '''
+        self.i = []  # 保存活前缀DFA状态
 
         self.grammar = Grammar()
         self.grammar.start = "S'"
@@ -37,7 +38,9 @@ class DFA:
         return close
 
     def dfa(self):
-        pass
+        close = self.closure(Product("S'", '.S'))
+        self.i.append(close)
+
 
 
 

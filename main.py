@@ -3,7 +3,10 @@ from dfa import *
 if __name__ == '__main__':
     g = Grammar()
     g.create('product.txt')
-    d = DFA(g)
+
+    lr = LR(g)
+    lr.lr_parsing('acb#')
+    '''
     close = d.closure(Product("S'", '.S'))
     for i in close:
         print(i)
@@ -13,4 +16,5 @@ if __name__ == '__main__':
     d.show_status()
     d.action_table()
     d.goto_table()
+    '''
 

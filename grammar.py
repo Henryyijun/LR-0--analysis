@@ -5,7 +5,9 @@ class Product:
         self.right = r
 
     def __str__(self):
-        return self.left + '->' + self.right
+        if len(self.left) > 0 and len(self.right) > 0:
+            return self.left + '->' + self.right
+        return ''
 
     def __hash__(self):
         return hash(hash(hash(self.left)) + hash(hash(self.right)))

@@ -1,5 +1,46 @@
 from grammar import *
 
+class LR:
+    def __init__(self, g):
+        self.dfa = DFA(g)
+        self.dfa.dfa()
+        self.action = self.dfa.action_table()
+        self.goto = self.dfa.goto_table()
+
+    def lr_parsing(self, string):
+        stack = []
+        stack.append(0)
+        symbols = []
+        symbols.append('#')
+        index = 0
+        p = Product('', '')
+        while True:
+            a = string[index]
+            s = stack[len(stack) - 1]
+            t = self.action[s].get(a, ' ')
+            if t != ' ' and t[0] == 's':
+                stack.append(int(t[1:]))
+                symbols.append(a)
+                index += 1
+            elif t != ' ' and t[0] == 'r':
+                p = self.dfa.p[int(t[1:])]
+                length = len(p.right)
+                for i in range(length):
+                    symbols.pop()
+                    stack.pop()
+                temp = stack[len(stack) - 1]
+                goto = self.goto[temp].get(p.left, ' ')
+                if goto != ' ':
+                    stack.append(goto)
+                    symbols.append(p.left)
+            elif t != ' ' and t == 'acc':
+                print('分析成功')
+                break
+            else:
+                print('分析失败')
+                break
+            print(stack, symbols, string[index:], p)
+
 
 class Transition:
     def __init__(self, sn, s, x, en, e):
@@ -160,13 +201,13 @@ class DFA:
         print()
         terminal.sort()
         print(terminal)
-        table = [[] for row in range(len(self.i))]  # 二维列表 存储action
+        table = [{} for row in range(len(self.i))]  # 二维列表 存储action
         for item in self.status:
             sn = item.start_num
             en = item.end_num
             x = item.x
             if x in self.grammar.Vt:
-                table[sn].append({x: 's' + str(en)})
+                table[sn].update({x: 's' + str(en)})
 
         for item in self.i:
             for i in item:
@@ -174,9 +215,9 @@ class DFA:
                     p = Product(i.left, i.right.strip('.'))
                     j = self.p.index(p)
                     for s in terminal:
-                        table[self.i.index(item)].append({s: 'r' + str(j)})
+                        table[self.i.index(item)].update({s: 'r' + str(j)})
                 elif i.right.find('.') == len(i.right) - 1 and (i.left == "S'" and i.right == 'S.'):
-                    table[self.i.index(item)].append({'#': 'acc'})
+                    table[self.i.index(item)].update({'#': 'acc'})
         count = 0
         for i in table:
             print(count, i)
@@ -189,13 +230,13 @@ class DFA:
         print()
         non_terminal.sort()
         print(non_terminal)
-        table = [[] for row in range(len(self.i))]
+        table = [{} for row in range(len(self.i))]
         for item in self.status:
             sn = item.start_num
             en = item.end_num
             x = item.x
             if x in self.grammar.Vn:
-                table[sn].append({x : en})
+                table[sn].update({x : en})
         count = 0
         for i in table:
             print(count, i)
@@ -212,6 +253,9 @@ class DFA:
         for i in self.status:
             print(i)
             print()
+
+
+
 
 
 

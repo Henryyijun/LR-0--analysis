@@ -1,6 +1,24 @@
 from grammar import *
 
 
+class Transition:
+    def __init__(self, s, x, e):
+        '''
+        :param s: 初始状态
+        :param x: 输入字符x
+        :param e: 输入字符x后的状态
+        '''
+        self.start = set()
+        self.start |= s
+        self.x = x
+        self.end = set()
+        self.end |= e
+
+    def __str__(self):
+        return '初始状态{}'.format([str(i) for i in self.start]) + '输入字符:' + self.x + ' 转变后的状态{}'.format([str(i) for i in self.end])
+
+
+
 class DFA:
     def __init__(self, g):
         '''
@@ -74,15 +92,19 @@ class DFA:
                 new_i = new_i | close
         return new_i
 
-    def is_in_i(self, items):
+    @staticmethod
+    def is_in_i(items, i):
         '''
         检查当前状态集合是否已经存在
         :param items: 项目集合，
+        :param i:
         :return: 存在返回true，否则返回 false
         '''
-        for item in self.i:
-            if len(item) == len(items) and len(items - item) == 0:
-                return True
+        for item in i:
+            if len(item) == len(items):
+                u = items - item
+                if len(u) == 0:
+                    return True
         return False
 
     def dfa(self):
@@ -93,24 +115,18 @@ class DFA:
         close = self.closure(Product("S'", '.S'))
         symbols = self.grammar.Vn | self.grammar.Vt
         symbols.remove("S'")
-        print(symbols)
         self.i.append(set(close))
         for items in self.i:
             for x in symbols:
                 temp = self.goto(items, x)
-                for a in temp:
-                    print(a)
-                print()
                 if len(temp) > 0:
-                    if not self.is_in_i(temp):
+                    if not self.is_in_i(temp, self.i):  # 不存在添加
                         self.i.append(temp)
-                        key = tuple([tuple(items), x])
-                        d = {key: temp}
-                        self.status.append(d)
+                        t = Transition(items, x, temp)
+                        self.status.append(t)
                     else:
-                        key = tuple([tuple(items), x])
-                        d = {key: temp}
-                        self.status.append(d)
+                        t = Transition(items, x, temp)
+                        self.status.append(t)
 
     def show_i(self):
         for items in self.i:
@@ -119,7 +135,9 @@ class DFA:
             print()
 
     def show_status(self):
-        pass
+        for i in self.status:
+            print(i)
+            print()
 
 
 

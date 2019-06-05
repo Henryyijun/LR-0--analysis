@@ -2,21 +2,25 @@ from grammar import *
 
 
 class Transition:
-    def __init__(self, s, x, e):
+    def __init__(self, sn, s, x, en, e):
         '''
-        :param s: 初始状态
-        :param x: 输入字符x
-        :param e: 输入字符x后的状态
+
+        :param sn: 开始状态编号
+        :param s: 开始状态集合
+        :param x: 输入的字符
+        :param en: 转变后的状态编号
+        :param e: 转变后的状态集合
         '''
+        self.start_num = sn
         self.start = set()
         self.start |= s
         self.x = x
         self.end = set()
+        self.end_num = en
         self.end |= e
 
     def __str__(self):
-        return '初始状态{}'.format([str(i) for i in self.start]) + '输入字符:' + self.x + ' 转变后的状态{}'.format([str(i) for i in self.end])
-
+        return '初始状态：编号为{a}, {b}'.format(a=self.start_num, b=[str(i) for i in self.start]) + '输入字符:' + self.x + ' 转变后的状态:编号为{a}, {b}'.format(a=self.end_num, b=[str(i) for i in self.end])
 
 
 class DFA:
@@ -41,7 +45,7 @@ class DFA:
         self.status.append(d)
         self.status = [{(I0, a): I1}]
         '''
-
+        self.p = g.P
         self.i = []
         self.status = []
         self.grammar = Grammar()
@@ -115,6 +119,9 @@ class DFA:
         close = self.closure(Product("S'", '.S'))
         symbols = self.grammar.Vn | self.grammar.Vt
         symbols.remove("S'")
+        symbols = list(symbols)
+        symbols.sort()
+        print(symbols)
         self.i.append(set(close))
         for items in self.i:
             for x in symbols:
@@ -122,11 +129,78 @@ class DFA:
                 if len(temp) > 0:
                     if not self.is_in_i(temp, self.i):  # 不存在添加
                         self.i.append(temp)
-                        t = Transition(items, x, temp)
+                        sn = self.i.index(items)
+                        en = self.i.index(temp)
+                        t = Transition(sn, items, x, en, temp)
                         self.status.append(t)
                     else:
-                        t = Transition(items, x, temp)
+                        sn = self.i.index(items)
+                        en = self.i.index(temp)
+                        t = Transition(sn, items, x, en, temp)
                         self.status.append(t)
+
+    def action(self, i, a):
+        '''
+        :param i: 状态i
+        :param a: 输入字符
+        :return: 返回移进 或者是 规约
+        '''
+
+    def action_table(self):
+        '''
+        构造LR(0) 分析表的aciton表
+        :return: action 表
+        采取的存储形式: index 为状态号 [{a:s1},... {#:acc}] 这种存储形式
+        [[{a:s1},... {#:acc}],
+        [{a:s1},... {#:acc}],
+        [{a:s1},... {#:acc}]]
+        '''
+        terminal = list(self.grammar.Vt)
+        terminal.append('#')
+        print()
+        terminal.sort()
+        print(terminal)
+        table = [[] for row in range(len(self.i))]  # 二维列表 存储action
+        for item in self.status:
+            sn = item.start_num
+            en = item.end_num
+            x = item.x
+            if x in self.grammar.Vt:
+                table[sn].append({x: 's' + str(en)})
+
+        for item in self.i:
+            for i in item:
+                if i.right.find('.') == len(i.right) - 1 and (i.left != "S'" and i.right != 'S.'):
+                    p = Product(i.left, i.right.strip('.'))
+                    j = self.p.index(p)
+                    for s in terminal:
+                        table[self.i.index(item)].append({s: 'r' + str(j)})
+                elif i.right.find('.') == len(i.right) - 1 and (i.left == "S'" and i.right == 'S.'):
+                    table[self.i.index(item)].append({'#': 'acc'})
+        count = 0
+        for i in table:
+            print(count, i)
+            count += 1
+        return table
+
+    def goto_table(self):
+        non_terminal = list(self.grammar.Vn)
+        non_terminal.remove("S'")
+        print()
+        non_terminal.sort()
+        print(non_terminal)
+        table = [[] for row in range(len(self.i))]
+        for item in self.status:
+            sn = item.start_num
+            en = item.end_num
+            x = item.x
+            if x in self.grammar.Vn:
+                table[sn].append({x : en})
+        count = 0
+        for i in table:
+            print(count, i)
+            count += 1
+        return table
 
     def show_i(self):
         for items in self.i:

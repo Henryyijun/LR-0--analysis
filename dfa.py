@@ -1,13 +1,17 @@
 from grammar import *
+from syntax_tree import *
 
 class LR:
     def __init__(self, g):
         self.dfa = DFA(g)
+        self.g = g
         self.dfa.dfa()
         self.action = self.dfa.action_table()
         self.goto = self.dfa.goto_table()
 
     def lr_parsing(self, string):
+        tree = Tree(self.g)
+        ps = []
         stack = []
         stack.append(0)
         symbols = []
@@ -15,6 +19,7 @@ class LR:
         index = 0
         p = Product('', '')
         while True:
+            print(stack, symbols, string[index:], p)
             a = string[index]
             s = stack[len(stack) - 1]
             t = self.action[s].get(a, ' ')
@@ -30,6 +35,7 @@ class LR:
                     stack.pop()
                 temp = stack[len(stack) - 1]
                 goto = self.goto[temp].get(p.left, ' ')
+                ps.append(p)
                 if goto != ' ':
                     stack.append(goto)
                     symbols.append(p.left)
@@ -39,7 +45,9 @@ class LR:
             else:
                 print('分析失败')
                 break
-            print(stack, symbols, string[index:], p)
+        ps.reverse()
+        root = tree.create_p(self.g, ps)
+        return root
 
 
 class Transition:

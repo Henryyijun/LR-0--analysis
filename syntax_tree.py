@@ -50,8 +50,6 @@ class Tree:
                     n.children.append(temp)
                     if temp.node_kind == 'Vn':
                         nodes.insert(0, temp)
-                for i in nodes:
-                    print(i)
         return root
 
     def print_tree(self, root):

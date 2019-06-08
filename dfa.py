@@ -44,6 +44,7 @@ class DFA:
         self.status.append(d)
         self.status = [{(I0, a): I1}]
         '''
+        self.g = g
         self.p = g.P
         self.i = []
         self.status = []
@@ -77,6 +78,7 @@ class DFA:
 
     def goto(self, i, x):
         '''
+        状态迁移函数，从状态i遇到字符x后 转移到下一个状态
         :param i: is a set of items
         :param x: is a grammar symbol
         :return:a new set of items, 在状态i下输入符号x转变成新的状态集合
@@ -205,8 +207,94 @@ class DFA:
             print(i)
             print()
 
+    def check(self, x):
+        for i in self.g.P:
+            if i.left == x and i.right == '`':
+                return True
+        return False
 
+    def get_first(self, x):
+        first = set()
+        if x in self.g.Vt:
+            first.add(x)
+            return first
 
+        if self.check(x):
+            first.add('`')
 
+        for it in self.g.P:
+            if it.left == x:
+                i = 0
+                for c in it.right:
+                    i += 1
+                    temp = self.get_first(c)
+                    if '`' in temp:
+                        first = first | temp
+                        if i == len(it.right):
+                            first.add('`')
+                    else:
+                        first = first | temp
+                        if '`' in first:
+                            first.remove('`')
+                        break
+                    temp.clear()
+        return first
+
+    def get_follow(self, x):
+        follow = set()
+        if x == self.g.start:
+            follow.add('#')
+        for p in self.g.P:
+            position = p.right.find(x)
+            if position != -1 and position != len(p.right) - 1:
+                temp = self.get_first(p.right[position + 1])
+                if '`' in temp:
+                    follow |= temp
+                    if '`' in follow:
+                        follow.remove('`')
+
+                    temp2 = self.get_follow(p.left)
+                    follow |= temp2
+                else:
+                    follow |= temp
+
+        for p in self.g.P:
+            if len(p.right) >= 1 and p.left != x:
+                position = p.right.find(x)
+                if position != -1 and position == len(p.right) - 1:
+                    temp2 = self.get_follow(p.left)
+                    follow |= temp2
+
+        return follow
+
+    def slr_action_table(self):
+        terminal = list(self.grammar.Vt)
+        terminal.append('#')
+        print()
+        terminal.sort()
+        print(terminal)
+        table = [{} for row in range(len(self.i))]  # 二维列表 存储action
+        for item in self.status:
+            sn = item.start_num
+            en = item.end_num
+            x = item.x
+            if x in self.grammar.Vt:
+                table[sn].update({x: 's' + str(en)})
+
+        for item in self.i:
+            for i in item:
+                if i.right.find('.') == len(i.right) - 1 and (i.left != "S'" and i.right != 'S.'):
+                    p = Product(i.left, i.right.strip('.'))
+                    j = self.p.index(p)
+                    for s in terminal:
+                        if s in self.get_follow(i.left):
+                            table[self.i.index(item)].update({s: 'r' + str(j)})
+                elif i.right.find('.') == len(i.right) - 1 and (i.left == "S'" and i.right == 'S.'):
+                    table[self.i.index(item)].update({'#': 'acc'})
+        count = 0
+        for i in table:
+            print(count, i)
+            count += 1
+        return table
 
 
